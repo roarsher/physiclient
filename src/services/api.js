@@ -6,10 +6,17 @@ export const mediaUrl = url =>
   url?.startsWith('/') ? apiBase + url : url;
 
 function notifySessionExpired(path, status) {
+  const pathname = path.split('?')[0];
+
+  // These requests can legitimately return 401 before login.
+  const isAuthCheck =
+    pathname === '/api/admin/login' ||
+    pathname === '/api/admin/session';
+
   if (
     status === 401 &&
-    path.startsWith('/api/admin/') &&
-    path !== '/api/admin/login'
+    pathname.startsWith('/api/admin/') &&
+    !isAuthCheck
   ) {
     window.dispatchEvent(
       new Event('admin-session-expired')
