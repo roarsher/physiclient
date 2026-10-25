@@ -1,6 +1,5 @@
- // Relative requests use the current website's origin.
-// Localhost: CRA proxy.
-// Vercel: vercel.json rewrites.
+ // Localhost uses the CRA proxy.
+// Vercel uses the rewrites in vercel.json.
 export const apiBase = '';
 
 export const mediaUrl = url =>
@@ -12,7 +11,9 @@ function notifySessionExpired(path, status) {
     path.startsWith('/api/admin/') &&
     path !== '/api/admin/login'
   ) {
-    window.dispatchEvent(new Event('admin-session-expired'));
+    window.dispatchEvent(
+      new Event('admin-session-expired')
+    );
   }
 }
 
@@ -41,14 +42,21 @@ export async function api(path, options = {}) {
 
   notifySessionExpired(path, response.status);
 
+  if (response.status === 204) {
+    return null;
+  }
+
   let result;
 
   try {
     result = await response.json();
   } catch {
-    throw new Error(
+    const error = new Error(
       'The API returned an unexpected response. Check the Vercel API rewrite.'
     );
+
+    error.status = response.status;
+    throw error;
   }
 
   if (!response.ok || !result.success) {
@@ -79,8 +87,12 @@ export async function downloadCsv(path, name) {
 
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
+    const error = new Error(
+      data.message || 'Export failed'
+    );
 
-    throw new Error(data.message || 'Export failed');
+    error.status = response.status;
+    throw error;
   }
 
   const blob = await response.blob();
@@ -89,6 +101,7 @@ export async function downloadCsv(path, name) {
 
   link.href = url;
   link.download = name;
+
   document.body.appendChild(link);
   link.click();
   link.remove();
