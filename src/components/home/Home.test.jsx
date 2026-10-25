@@ -1,0 +1,12 @@
+import React,{act} from 'react';
+import {createRoot} from 'react-dom/client';
+import {EnquiryProvider} from '../../context/EnquiryContext';
+import Header from '../layout/Header';
+import {clinic} from '../../config/clinic';
+import {services} from '../../data/services';
+let node,root;
+beforeEach(()=>{global.IS_REACT_ACT_ENVIRONMENT=true;window.matchMedia=jest.fn().mockImplementation(()=>({matches:true,addListener:jest.fn(),removeListener:jest.fn(),addEventListener:jest.fn(),removeEventListener:jest.fn()}));node=document.createElement('div');document.body.append(node);root=createRoot(node);});
+afterEach(()=>{act(()=>root.unmount());node.remove();});
+test('mobile navigation opens, contains gallery, and closes after a selection',async()=>{await act(async()=>root.render(<EnquiryProvider><Header/></EnquiryProvider>));const toggle=node.querySelector('.menu-toggle');expect(toggle.getAttribute('aria-expanded')).toBe('false');await act(async()=>toggle.click());expect(toggle.getAttribute('aria-expanded')).toBe('true');const gallery=node.querySelector('#mobile-menu a[href="#gallery"]');expect(gallery).not.toBe(null);await act(async()=>gallery.click());expect(toggle.getAttribute('aria-expanded')).toBe('false');});
+test('service catalogue keeps originals, home visits and all six featured offerings',()=>{expect(services).toHaveLength(43);expect(services.filter(s=>s.featured)).toHaveLength(6);expect(services.find(s=>s.homeVisit)).toBeDefined();expect(new Set(services.map(s=>s.id)).size).toBe(43);});
+test('unverified reviews and counter values are not fabricated',()=>{expect(clinic.testimonials).toHaveLength(0);expect(clinic.stats.every(s=>s.value===null)).toBe(true);});

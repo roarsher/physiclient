@@ -1,0 +1,10 @@
+import React,{act} from 'react';
+import {createRoot} from 'react-dom/client';
+import ServiceVideo from './ServiceVideo';
+let node,root,play,pause;
+const service={name:'Knee Care',picture:'joint',videoUrl:'/videos/services/knee-care.mp4',videoCaptionsUrl:''};
+beforeEach(()=>{global.IS_REACT_ACT_ENVIRONMENT=true;node=document.createElement('div');document.body.append(node);root=createRoot(node);play=jest.spyOn(HTMLMediaElement.prototype,'play').mockResolvedValue();pause=jest.spyOn(HTMLMediaElement.prototype,'pause').mockImplementation(()=>{});});
+afterEach(()=>{act(()=>root.unmount());node.remove();jest.restoreAllMocks();});
+test('opens a muted controllable video and pauses on close',async()=>{await act(async()=>root.render(<ServiceVideo service={service}/>));const video=node.querySelector('video');expect(video.getAttribute('src')).toBe(service.videoUrl);expect(video.muted).toBe(true);expect(video.controls).toBe(true);expect(video.hasAttribute('playsinline')).toBe(true);expect(play).toHaveBeenCalled();act(()=>root.unmount());root=createRoot(node);expect(pause).toHaveBeenCalled();});
+test('missing or failed video shows a clear fallback',async()=>{await act(async()=>root.render(<ServiceVideo service={service}/>));act(()=>node.querySelector('video').dispatchEvent(new Event('error')));expect(node.querySelector('video')).toBe(null);expect(node.textContent).toContain('Service video coming soon');});
+test('blocked autoplay offers a manual play button',async()=>{play.mockRejectedValue(new Error('autoplay blocked'));await act(async()=>root.render(<ServiceVideo service={service}/>));expect(node.querySelector('button').textContent).toBe('Play service video');play.mockResolvedValue();await act(async()=>node.querySelector('button').click());expect(play).toHaveBeenCalledTimes(2);});
