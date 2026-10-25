@@ -74,45 +74,51 @@ export default function AdminDashboard() {
   };
 }, []);
 
-  async function login(event) {
-    event.preventDefault();
+async function login(event) {
+  event.preventDefault();
 
-    const form = new FormData(event.currentTarget);
+  const form = new FormData(event.currentTarget);
+  let credentialsAccepted = false;
 
-    setBusy(true);
-    setError('');
+  setBusy(true);
+  setError('');
 
-    try {
-      await api('/api/admin/login', {
-        method: 'POST',
-        body: JSON.stringify({
-          email: String(form.get('email') || '').trim(),
-          password: String(form.get('password') || ''),
-        }),
-      });
+  try {
+    await api('/api/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: String(form.get('email') || '').trim(),
+        password: String(form.get('password') || ''),
+      }),
+    });
 
-      // Verify that a separate request carries the saved session.
-      const session = await api('/api/admin/session');
+    credentialsAccepted = true;
 
-      if (!session?.authenticated) {
-        throw new Error('Unable to verify your login session.');
-      }
+    const session = await api('/api/admin/session');
 
-      setTab('overview');
-      setError('');
-      setAuth(true);
-    } catch (error) {
-      setAuth(false);
-
-      setError(
-        error.status === 401
-          ? 'Login could not be verified. Please sign in again.'
-          : error.message
-      );
-    } finally {
-      setBusy(false);
+    if (!session?.authenticated) {
+      throw new Error('Unable to verify your login session.');
     }
+
+    setTab('overview');
+    setError('');
+    setAuth(true);
+  } catch (error) {
+    setAuth(false);
+
+    if (error.status === 401) {
+      setError(
+        credentialsAccepted
+          ? 'Credentials accepted, but the session was not retained.'
+          : 'Incorrect admin email or password.'
+      );
+    } else {
+      setError(error.message || 'Unable to sign in.');
+    }
+  } finally {
+    setBusy(false);
   }
+}
 
   async function logout() {
     setBusy(true);
