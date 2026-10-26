@@ -12,6 +12,7 @@ import ServicesDropdown from './ServicesDropdown';
 
 const links = [
   ['Home', 'home'],
+  ['Home Visits', 'home-visits'],
   ['Our Services', 'services'],
   ['Why Us', 'why-us'],
   ['About', 'about'],
@@ -19,7 +20,6 @@ const links = [
   ['Reviews', 'reviews'],
   ['Contact', 'contact'],
 ];
-
 export default function Header() {
   const [open, setOpen] = useState(false);
   const { openEnquiry } = useEnquiry();
