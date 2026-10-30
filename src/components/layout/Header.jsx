@@ -1,27 +1,33 @@
  import { useEffect, useState } from 'react';
+
 import {
   AnimatePresence,
   motion,
   useReducedMotion,
 } from 'framer-motion';
+
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 
 import { useEnquiry } from '../../context/EnquiryContext';
 import logo from '../../assets/abhi-logo.png';
 import ServicesDropdown from './ServicesDropdown';
 
+import './Header.css';
+
 const links = [
   ['Home', 'home'],
   ['Home Visits', 'home-visits'],
   ['Our Services', 'services'],
-  ['Why Us', 'why-us'],
   ['About', 'about'],
+  ['Why Us', 'why-us'],
   ['Gallery', 'gallery'],
   ['Reviews', 'reviews'],
   ['Contact', 'contact'],
 ];
+
 export default function Header() {
   const [open, setOpen] = useState(false);
+
   const { openEnquiry } = useEnquiry();
   const reduced = useReducedMotion();
 
@@ -49,7 +55,7 @@ export default function Header() {
   }
 
   return (
-    <header className="site-header">
+    <header className="site-header profile-site-header">
       <div className="navbar shell">
         <a
           className="brand"
@@ -57,7 +63,7 @@ export default function Header() {
           onClick={() => setOpen(false)}
           aria-label="Abhi Physiotherapy home"
         >
-          <img src={logo} alt="" />
+          <img src={logo} alt="" width="52" height="52" />
 
           <span>
             Abhi Physiotherapy
@@ -65,7 +71,10 @@ export default function Header() {
           </span>
         </a>
 
-        <nav className="desktop-nav" aria-label="Main navigation">
+        <nav
+          className="desktop-nav"
+          aria-label="Main navigation"
+        >
           {links.map(([label, id]) =>
             id === 'services' ? (
               <ServicesDropdown key={id} />
@@ -95,23 +104,29 @@ export default function Header() {
           className="menu-toggle"
           aria-expanded={open}
           aria-controls="mobile-menu"
-          aria-label={open ? 'Close navigation' : 'Open navigation'}
+          aria-label={
+            open ? 'Close navigation' : 'Open navigation'
+          }
           onClick={() => setOpen(current => !current)}
         >
           {open ? <X /> : <Menu />}
         </button>
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {open && (
           <motion.nav
             id="mobile-menu"
             className="mobile-nav"
             aria-label="Mobile navigation"
-            initial={reduced ? false : { height: 0, opacity: 0 }}
+            initial={
+              reduced ? false : { height: 0, opacity: 0 }
+            }
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: reduced ? 0 : 0.25 }}
+            transition={{
+              duration: reduced ? 0 : 0.2,
+            }}
           >
             {links.map(([label, id]) =>
               id === 'services' ? (
@@ -131,8 +146,12 @@ export default function Header() {
               )
             )}
 
-            <a href="/admin" onClick={() => setOpen(false)}>
+            <a
+              href="/admin"
+              onClick={() => setOpen(false)}
+            >
               Admin Login
+              <ArrowUpRight size={16} />
             </a>
 
             <button
